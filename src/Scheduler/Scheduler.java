@@ -1,5 +1,6 @@
 package Scheduler;
 
+
 import Request.ConsumeRequest;
 import Request.IRequest;
 import Request.ProduceRequest;
@@ -12,52 +13,61 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Scheduler {
 
+    //DispatchQueue queue;
+    private ConcurrentLinkedQueue<ProduceRequest> producersQueue;
+    private ConcurrentLinkedQueue<ConsumeRequest> consumersQueue;
     ReentrantLock lock;
     Condition dispatchLoopCondition;
 
 
     public Scheduler() {
+        //this.queue = new DispatchQueue();
         this.producersQueue = new ConcurrentLinkedQueue<>();
         this.consumersQueue = new ConcurrentLinkedQueue<>();
-        lock = new ReentrantLock();
-        dispatchLoopCondition = lock.newCondition();
+        this.lock = new ReentrantLock();
+        this.dispatchLoopCondition = lock.newCondition();
         dispatch();
 
     }
 
-    private ConcurrentLinkedQueue<ProduceRequest> producersQueue;
-    private ConcurrentLinkedQueue<ConsumeRequest> consumersQueue;
+
 
     public Future enqueue(IRequest request){
-        lock.lock();
+        //lock.lock();
         // sprawdź jaki Request przychodzi
         // dodaj na koniec odpowiedniej kolejki
 
-        if (request instanceof ProduceRequest){
-            producersQueue.offer((ProduceRequest) request);
-        }
+        //Future tmp = null;
         if (request instanceof ConsumeRequest){
             consumersQueue.offer((ConsumeRequest) request);
+            lock.lock();
+            dispatchLoopCondition.signal();
+            lock.unlock();
+            return ((ConsumeRequest) request).reesult;
+
+        }
+        if (request instanceof ProduceRequest){
+            producersQueue.offer((ProduceRequest) request);
+            lock.lock();
+            dispatchLoopCondition.signal();
+            lock.unlock();
+            return ((ProduceRequest) request).reesult;
         }
 
-        dispatchLoopCondition.signal();
-        System.out.println("Added to queue");
-        System.out.println("ConsumersRequests: " + consumersQueue.toString());
-        System.out.println("ProducersRequests: " + producersQueue.toString());
-        lock.unlock();
+
+        //return tmp;
         return null;
-    };
+    }
 
     private void dispatch() {
         Thread thread = new Thread(new Runnable() {
 
             @Override
             public void run() {
-                while (true) {
+                while (Main.threadsAreRunning) {
                     lock.lock();
-                    System.out.println("In dispatch loop");
                     if (producersQueue.isEmpty() && consumersQueue.isEmpty()){
-                        System.out.println("both empty");
+//                        System.out.println("both empty");
                         try {
                             dispatchLoopCondition.await();
                         } catch (InterruptedException e) {
@@ -65,9 +75,10 @@ public class Scheduler {
                         }
                     } else{
                         if (producersQueue.isEmpty()){
-                            System.out.println("onlly prods empty");
+//                            System.out.println("onlly prods empty");
                             ConsumeRequest c = consumersQueue.poll();
                             if (c.guard()){
+                                //result = c;
                                 c.call();
                                 //c.reesult =  Main.myTotallyExternalMethod();
                             } else{
@@ -78,32 +89,33 @@ public class Scheduler {
                                 }
                             }
                         } else{
-                            System.out.println("prods not empty");
+//                            System.out.println("prods not empty");
                             ProduceRequest p = producersQueue.poll();
                             if (p.guard()){
+//                                result = p;
                                 p.call();
                                 //p.reesult =  Main.myVoidTotallyExternalMethod();
                             } else{
-                                System.out.println("Prods not empty but guard");
+//                                System.out.println("Prods not empty but guard");
                                 if (consumersQueue.isEmpty()){
-                                    System.out.println("Prods guard, cons empty");
+//                                    System.out.println("Prods guard, cons empty");
                                     try {
                                         dispatchLoopCondition.await();
                                     } catch (InterruptedException e) {
                                         e.printStackTrace();
                                     }
                                 } else{
-                                    System.out.println("Just take consumer, must be");
+//                                    System.out.println("Just take consumer, must be");
                                     ConsumeRequest consumeRequest = consumersQueue.poll();
                                     consumeRequest.call();
+//                                    result = consumeRequest;
                                     //consumeRequest.reesult = Main.myTotallyExternalMethod();
 
                                 }
                             }
                         }
                     }
-
-                    System.out.println("Finished choosing request");
+                    lock.unlock();
                 }
 
                 /*while(true) {

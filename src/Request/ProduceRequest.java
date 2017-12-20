@@ -10,13 +10,12 @@ import java.util.concurrent.*;
 
 public class ProduceRequest implements IRequest {
     private int howMany;
-    public Future<Integer> reesult;
+    public CompletableFuture<Integer> reesult;
     public Buffer buffer;
     List<Integer> input;
 
     public ProduceRequest(int howMany, Buffer buffer, List<Integer> input) {
         this.howMany = howMany;
-        // FIXME czy to poniżej będzie ok?
         this.reesult = new CompletableFuture<>();
         this.buffer = buffer;
         this.input = input;
@@ -30,14 +29,17 @@ public class ProduceRequest implements IRequest {
     @Override
     public void call() {
 
-        ExecutorService es = Executors.newFixedThreadPool(1);
-
-        this.reesult = es.submit(this.subCallProduce);
+        //ExecutorService es = Executors.newFixedThreadPool(1);
+//        System.out.println("In ProduceRequest this.reesult: " + this.reesult);
+        this.buffer.produce(this.input);
+        this.reesult.complete(5);
+//        this.reesult = es.submit(this.subCallProduce);
         //this.buffer.produce(this.input);
 
     }
-    private Callable<Integer> subCallProduce = () -> {
+    /*private Callable<Integer> subCallProduce = () -> {
         this.buffer.produce(this.input);
+        this.reesult
         return 0;
-    };
+    };*/
 }

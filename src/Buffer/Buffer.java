@@ -1,8 +1,11 @@
 package Buffer;
 
+import main.Main;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Buffer {
     private List<Integer> actualBuffer;
@@ -26,9 +29,17 @@ public class Buffer {
     }
 
     public void produce(List<Integer> input) {
+
         actualBuffer.addAll(input);
         this.count += input.size();
-        System.out.println(this.toString());
+        Main.alreadyProduced.addAndGet(input.size());
+
+        try {
+            TimeUnit.MILLISECONDS.sleep(Main.bufferDelayInMilliseconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        //System.out.println(this.toString());
 
     }
 
@@ -36,7 +47,16 @@ public class Buffer {
         List<Integer> result = new LinkedList<>();
         for (int i = 0; i < howMany; i++) {
             result.add(actualBuffer.get(0));
+            actualBuffer.remove(0);
+            this.count--;
         }
+        try {
+            TimeUnit.MILLISECONDS.sleep(Main.bufferDelayInMilliseconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //System.out.println(this.toString());
         return result;
     }
 
@@ -45,7 +65,7 @@ public class Buffer {
         StringBuilder builder = new StringBuilder();
         builder.append("BUFFER: ");
         builder.append(actualBuffer.toString());
-        builder.append("\nCount: ");
+        builder.append(" Count: ");
         builder.append(this.count);
         builder.append(" :: capacity: ");
         builder.append(this.capacity);

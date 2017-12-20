@@ -7,7 +7,7 @@ import java.util.concurrent.*;
 
 public class ConsumeRequest implements IRequest {
     private int howMany;
-    public Future<List<Integer>> reesult;
+    public CompletableFuture<List<Integer>> reesult;
     public Buffer buffer;
 
     public ConsumeRequest(int howMany, Buffer buffer) {
@@ -24,12 +24,13 @@ public class ConsumeRequest implements IRequest {
 
     @Override
     public void call() {
-        ExecutorService es = Executors.newFixedThreadPool(1);
+        //ExecutorService es = Executors.newFixedThreadPool(1);
 
-        this.reesult = es.submit(this.subCallConsume);
+        this.reesult.complete(this.buffer.consume(this.howMany));
+        //this.reesult = es.submit(this.subCallConsume);
 
     }
 
-    private Callable<List<Integer>> subCallConsume = () -> this.buffer.consume(this.howMany);
+    //private Callable<List<Integer>> subCallConsume = () -> ;
 
 }
