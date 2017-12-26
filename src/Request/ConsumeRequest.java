@@ -24,13 +24,11 @@ public class ConsumeRequest implements IRequest {
 
     @Override
     public void call() {
-        //ExecutorService es = Executors.newFixedThreadPool(1);
 
         this.reesult.complete(this.buffer.consume(this.howMany));
-        //this.reesult = es.submit(this.subCallConsume);
+
 
     }
 
-    //private Callable<List<Integer>> subCallConsume = () -> ;
 
 }

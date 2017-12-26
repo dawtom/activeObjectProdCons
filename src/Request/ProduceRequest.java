@@ -28,18 +28,9 @@ public class ProduceRequest implements IRequest {
 
     @Override
     public void call() {
-
-        //ExecutorService es = Executors.newFixedThreadPool(1);
-//        System.out.println("In ProduceRequest this.reesult: " + this.reesult);
         this.buffer.produce(this.input);
         this.reesult.complete(5);
-//        this.reesult = es.submit(this.subCallProduce);
-        //this.buffer.produce(this.input);
 
     }
-    /*private Callable<Integer> subCallProduce = () -> {
-        this.buffer.produce(this.input);
-        this.reesult
-        return 0;
-    };*/
+
 }

@@ -24,7 +24,7 @@ public class ProducerThread extends Thread{
 
     public void run(){
         while(Main.threadsAreRunning){
-            int howManyElements = (r.nextInt(99999));
+            int howManyElements = 20000;
             Future<Integer> myResult =  proxy.produce(this.generateRandomList(howManyElements));
 
             if (doOperation) {
@@ -35,10 +35,8 @@ public class ProducerThread extends Thread{
 
             while (!myResult.isDone() && Main.threadsAreRunning) {
             }
-            //System.out.println("PRODUCER BACK");
         }
-//        System.out.println("Name: " + this.name + ", operations: " + this.operationsCounter);
-        //throw new NullPointerException();
+
     }
 
     private List<Integer> generateRandomList(int howManyElements){

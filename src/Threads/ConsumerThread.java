@@ -26,7 +26,7 @@ public class ConsumerThread extends Thread {
 
     public void run(){
         while(Main.threadsAreRunning){
-            int howManyElements = r.nextInt(99999);
+            int howManyElements = 20000;
             Future<List<Integer>> f = proxy.consume(howManyElements);
 
             if (doOperation) {
